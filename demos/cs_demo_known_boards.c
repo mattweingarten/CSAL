@@ -518,6 +518,65 @@ static int do_registration_soc600fpga(struct cs_devices_t *devices)
     return -1;
 }
 
+static int do_registration_zynq7000(struct cs_devices_t * devices)
+{
+
+    cs_device_t  funnel, tpiu, rep;
+
+    if (registration_verbose)
+        printf("CSDEMO: Registering Zynq-7000 CoreSight devices...\n");
+    cs_register_romtable(0xF8800000);
+    enum {A9_0, A9_1};
+    if(registration_verbose)
+        printf("CSDEMO: Registering CPU affinities...\n");
+    /*PTMs*/
+    cs_device_set_affinity(cs_device_register(0xF889C000), A9_0);
+    cs_device_set_affinity(cs_device_register(0xF889D000), A9_1);
+
+    /*ITM*/
+    devices->itm = cs_device_register(0xF8805000);
+
+
+    /* CTIs */
+    cs_device_set_affinity(cs_device_register(0xF8898000), A9_0);
+    cs_device_set_affinity(cs_device_register(0xF8899000), A9_1);
+
+    if(registration_verbose)
+        printf("CSDEMO: Registering trace-bus connections...\n");
+
+    /*TODO: Double check in and out port numbers*/
+    funnel = cs_device_register(0xF8804000);
+    cs_atb_register(cs_cpu_get_device(A9_0, CS_DEVCLASS_SOURCE), 0,
+                    funnel, 0);
+
+    cs_atb_register(cs_cpu_get_device(A9_1, CS_DEVCLASS_SOURCE), 0,
+                    funnel, 1);
+    cs_atb_register(devices->itm, 0,
+                    funnel, 3);
+
+    rep = cs_atb_add_replicator(2);
+    cs_atb_register(funnel, 0, rep, 0);
+
+                  
+
+
+
+
+    tpiu = cs_device_register(0xF8803000);
+    devices->etb = cs_device_register(0xF8801000);
+
+    cs_atb_register(rep, 0, devices->etb, 0);
+    cs_atb_register(rep, 1, tpiu, 0);
+
+    /*TODO: Add CTI interface*/
+
+    devices->cpu_id[0] = A9_0;
+    devices->cpu_id[1] = A9_1;
+
+
+    return 0;
+}
+
 const struct board known_boards[] = {
     {
         .do_registration = do_registration_arndale,
@@ -548,8 +607,13 @@ const struct board known_boards[] = {
         .n_cpu = 2,
         .hardware = "SoC-600 FPGA",
     },
-    {}
+    {
+        .do_registration = do_registration_zynq7000,
+        .n_cpu = 2,
+        .hardware = "Zynq-7000"
+    }
 };
+
 
 int setup_known_board(const struct board **board,
                       struct cs_devices_t *devices)
