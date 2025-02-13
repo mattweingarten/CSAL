@@ -570,8 +570,8 @@ static int do_registration_zynq7000(struct cs_devices_t * devices)
 
     /*TODO: Add CTI interface*/
 
-    devices->cpu_id[0] = A9_0;
-    devices->cpu_id[1] = A9_1;
+    devices->cpu_id[0] = 0xC09;
+    devices->cpu_id[1] = 0xC09;
 
 
     return 0;
