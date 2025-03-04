@@ -417,7 +417,8 @@ static int do_configure_trace(const struct board *board)
             cs_trace_enable_timestamps(devices.ptm[i], 1);
         if (trace_cycle_accurate)
             cs_trace_enable_cycle_accurate(devices.ptm[i], 1);
-        cs_trace_enable(devices.ptm[i]);
+        if (!itm_only)
+            cs_trace_enable(devices.ptm[i]);
     }
 
     if (itm) {
@@ -793,7 +794,8 @@ int main(int argc, char **argv)
 
     if (itm) {
         for (i = 0; i < 40; ++i) {
-            cs_trace_stimulus(devices.itm, (i & 0xF), seed + i);
+            //cs_trace_stimulus(devices.itm, (i & 0xF), seed + i);
+            cs_trace_stimulus(devices.itm, (i & 0xF), 0xDEADBEEF);
             usleep(100);
         }
     }
