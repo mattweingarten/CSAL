@@ -68,7 +68,12 @@ int cs_sink_enable(cs_device_t dev)
                then read the data, then disable for reprogramming. */
             flfmt |= CS_ETB_FLFMT_CTRL_StopFl;
         }
-        _cs_set(d, CS_ETB_FLFMT_CTRL, flfmt);
+        // _cs_set(d, CS_ETB_FLFMT_CTRL, flfmt);
+        _cs_write(d, CS_ETB_FLFMT_CTRL, 0);
+        _cs_write(d, CS_ETB_CTRL, CS_ETB_CTRL_TraceCaptEn);
+        printf("FLMFT:  0x%lX\n", _cs_read(d, CS_ETB_FLFMT_CTRL));
+        printf("CS_ETB_CTRL:  0x%lX\n", _cs_read(d, CS_ETB_CTRL));
+        return 0;
         return _cs_write(d, CS_ETB_CTRL, CS_ETB_CTRL_TraceCaptEn);
     } else {
         /* The only other sinks would be trace ports, and currently this
@@ -301,7 +306,8 @@ int cs_get_trace_data(cs_device_t dev, void *buf, unsigned int size)
     }
     while (words_left_to_read > 0) {
         unsigned int data = etb_read_reg ? *etb_read_reg : _cs_read(d, CS_ETB_RAM_DATA);
-        //printf("read %08x, read ptr now %08x\n", data, _cs_read(d, CS_ETB_RAM_RD_PTR));
+        // printf("read %08x, read ptr now %08x\n", data, _cs_read(d, CS_ETB_RAM_RD_PTR));
+        // printf("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL\n");
         if (data != 0xFFFFFFFF) {
             *op++ = data;
         } else {
